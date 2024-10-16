@@ -2,12 +2,41 @@ package fa.nfa;
 
 import fa.State;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.LinkedHashSet;
+/*
+    This class is used as an acting NFA which enables the user to create a Non-Deterministic Finite Automata.
+
+    @author Brian Wu
+    @author Max Ma
+    @version 1.0
+ */
 
 public class NFA implements NFAInterface{
+
+    private Set<NFAState> Q;
+    private Set<NFAState> F;
+    private Set<Character> Sigma;
+    private NFAState q0;
+
+
+    public NFA(){
+        this.F = new LinkedHashSet<>();
+        this.Q = new LinkedHashSet<>();
+        this.Sigma = new LinkedHashSet<>();
+        this.q0 = null;
+    }
+
     @Override
     public boolean addState(String name) {
-        return false;
+        NFAState newState = new NFAState(name);
+        for (NFAState state: Q) {
+            if (state.getName().equals(newState.getName())) {
+                return false;
+            }
+        }
+        return Q.add(newState);
     }
 
     @Override
@@ -25,18 +54,38 @@ public class NFA implements NFAInterface{
 
     }
 
+    /*
+        Different Implementation from P1
+     */
     @Override
     public boolean accepts(String s) {
+
+        NFAState currentState = this.q0;
+//        if (s.length() == 0) {
+//            return(isFinal(currentState.getName()));
+//        }
+
+
         return false;
     }
 
     @Override
     public Set<Character> getSigma() {
-        return null;
+        Set<Character> tempSigma = new HashSet<>(); // Used for encapsulation, could also use LinkedHashSet
+        Object[] temp = Sigma.toArray();
+        for (Object item: temp) {
+            tempSigma.add((Character) item);
+        }
+        return tempSigma;
     }
 
     @Override
     public State getState(String name) {
+        for (State state : Q) {
+            if (state.getName().equals(name)) { // State located!
+                return state;
+            }
+        }
         return null;
     }
 
@@ -65,6 +114,9 @@ public class NFA implements NFAInterface{
         return 0;
     }
 
+    /*
+        Different implementation from P1
+     */
     @Override
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
         return false;
