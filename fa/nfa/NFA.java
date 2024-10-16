@@ -41,16 +41,28 @@ public class NFA implements NFAInterface{
 
     @Override
     public boolean setFinal(String name) {
+        for(NFAState state: Q){
+            if (state.getName().equals(name)){
+                return F.add(state);
+            }
+        }
         return false;
     }
 
     @Override
     public boolean setStart(String name) {
+        for(NFAState state: Q){
+            if(state.getName().equals(name)){
+                q0 = state;
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public void addSigma(char symbol) {
+        Sigma.add(symbol);
 
     }
 
@@ -91,12 +103,17 @@ public class NFA implements NFAInterface{
 
     @Override
     public boolean isFinal(String name) {
+        for(NFAState state: F){
+            if(state.getName().equals(name)){
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean isStart(String name) {
-        return false;
+        return q0.getName().equals(name);
     }
 
     @Override
