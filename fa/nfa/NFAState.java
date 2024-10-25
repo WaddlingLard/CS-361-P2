@@ -40,4 +40,16 @@ public class NFAState extends State {
      */
     public Set<NFAState> getNFATransition(Character sigma) { return states.get(sigma); }
 
+    /*
+        A toString() method primarily used for testing purposes
+        @return Output of name and map transitions
+     */
+    public String toString() {
+        String output = "";
+        output += getName() + "\n";
+        output += states.toString();
+        return output;
+    }
+
+
 }

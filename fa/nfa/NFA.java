@@ -19,6 +19,8 @@ public class NFA implements NFAInterface{
     private Set<NFAState> F;
     private Set<Character> Sigma;
     private NFAState q0;
+    private boolean epsilonTransition;
+    private final char EPSILON = 'e';
 
 
     public NFA(){
@@ -26,6 +28,7 @@ public class NFA implements NFAInterface{
         this.Q = new LinkedHashSet<>();
         this.Sigma = new LinkedHashSet<>();
         this.q0 = null;
+        this.epsilonTransition = false;
     }
 
     @Override
@@ -63,7 +66,20 @@ public class NFA implements NFAInterface{
     @Override
     public void addSigma(char symbol) {
         Sigma.add(symbol);
+    }
 
+    /*
+
+        @param
+        @return
+     */
+    private boolean inSigma(char symbol) {
+        for (Character letter: this.Sigma) {
+            if (letter == (Character) symbol) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*
@@ -131,16 +147,48 @@ public class NFA implements NFAInterface{
         return 0;
     }
 
-    /*
-        Different implementation from P1
-     */
     @Override
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
-        return false;
+        NFAState currentState = (NFAState) getState(fromState);
+        if (currentState == null || !inSigma(onSymb) || !statesInMachine(toStates)) { // fromState not valid in machine or onSymb not present in alphabet
+            return false;
+        }
+
+        if (EPSILON == onSymb) { // Flagging epsilon transition flag
+            epsilonTransition = true;
+        }
+        // Adding transition
+        for (String state: toStates) {
+            NFAState transition = (NFAState) getState(state);
+            Set<NFAState> transitionSet = currentState.addTransition(transition, onSymb);
+            if (!transitionSet.contains(transition)) { // For testing if not adding properly
+                System.out.println("ERROR WITH ADDING TRANSITION");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     public boolean isDFA() {
-        return false;
+        // This is a DFA if there are no epsilon or ambiguous transitions
+        // Likely need to use eClosure() and a way to grab the transitions of each state
+        if (epsilonTransition) {
+            return false;
+        }
+
+
+        return true;
+    }
+
+    private boolean statesInMachine(Set<String> states) {
+        for (String state: states) {
+            State testState = getState(state);
+            if (testState == null) { // State not in machine
+                return false;
+            }
+        }
+        return true;
     }
 }
