@@ -51,5 +51,13 @@ public class NFAState extends State {
         return output;
     }
 
-
+    public Set<NFAState> getEpsilonTransitions() {
+        if (states.containsKey('e')) { // Check if there are states reachable via ε transitions
+            return states.get('e'); // Return the states with the ε transition
+        } else {
+            return new HashSet<>(); // Return an empty set if no ε transitions exist
+        }
+    }
 }
+
+

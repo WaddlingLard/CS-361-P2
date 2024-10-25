@@ -5,6 +5,7 @@ import fa.State;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.Stack;
 /*
     This class is used as an acting NFA which enables the user to create a Non-Deterministic Finite Automata.
 
@@ -136,10 +137,34 @@ public class NFA implements NFAInterface{
     public Set<NFAState> getToState(NFAState from, char onSymb) {
         return null;
     }
+    
+
 
     @Override
     public Set<NFAState> eClosure(NFAState s) {
-        return null;
+        Set<NFAState> closure = new HashSet<>();
+        Stack<NFAState> stack = new Stack<>();
+        stack.push(s);
+
+        while(!stack.isEmpty()){
+            NFAState curr = stack.pop();
+            if(!closure.contains(curr)){
+                closure.add(curr);
+
+                Set<NFAState> epsilonStates = curr.getEpsilonTransitions();
+                if (epsilonStates != null) {
+                    for (NFAState nextState : epsilonStates) {
+                        if (!closure.contains(nextState)) {
+                            stack.push(nextState); // Only push if not already visited
+                        }
+                    }
+                }
+
+                
+            }
+        }
+
+        return closure;
     }
 
     @Override
