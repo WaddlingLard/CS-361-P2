@@ -26,11 +26,12 @@ public class NFAState extends State {
         if (currentStates == null) { // Need to create new set
             Set<NFAState> newSet = new HashSet<>();
             newSet.add(location);
-            return states.put(sigma, newSet);
+            states.put(sigma, newSet);
         } else { // There is a set holding transitions currently
             currentStates.add(location);
-            return states.put(sigma, currentStates);
+            states.put(sigma, currentStates);
         }
+        return states.get(sigma);
     }
 
     /*

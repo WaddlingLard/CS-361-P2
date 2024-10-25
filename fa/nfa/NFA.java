@@ -109,8 +109,8 @@ public class NFA implements NFAInterface{
     }
 
     @Override
-    public State getState(String name) {
-        for (State state : Q) {
+    public NFAState getState(String name) {
+        for (NFAState state : Q) {
             if (state.getName().equals(name)) { // State located!
                 return state;
             }
@@ -176,6 +176,7 @@ public class NFA implements NFAInterface{
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
         NFAState currentState = (NFAState) getState(fromState);
         if (currentState == null || !inSigma(onSymb) || !statesInMachine(toStates)) { // fromState not valid in machine or onSymb not present in alphabet
+            System.out.println("NOT VALID METHOD CALL");
             return false;
         }
 
@@ -207,6 +208,11 @@ public class NFA implements NFAInterface{
         return true;
     }
 
+    /*
+
+        @param
+        @return
+     */
     private boolean statesInMachine(Set<String> states) {
         for (String state: states) {
             State testState = getState(state);
