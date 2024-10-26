@@ -73,24 +73,6 @@ public class NFA implements NFAInterface{
     }
 
     /*
-
-        @param
-        @return
-     */
-    private boolean inSigma(char symbol) {
-        if (EPSILON == symbol) { // Epsilon not a letter in the alphabet but is technically a valid transitional character
-            return true;
-        }
-
-        for (Character letter: this.Sigma) {
-            if (letter == (Character) symbol) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /*
         Different Implementation from P1
      */
     @Override
@@ -144,8 +126,6 @@ public class NFA implements NFAInterface{
     public Set<NFAState> getToState(NFAState from, char onSymb) {
         return null;
     }
-    
-
 
     @Override
     public Set<NFAState> eClosure(NFAState s) {
@@ -183,7 +163,7 @@ public class NFA implements NFAInterface{
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
         NFAState currentState = getState(fromState);
         if (currentState == null || !inSigma(onSymb) || !statesInMachine(toStates)) { // fromState not valid in machine or onSymb not present in alphabet
-            System.out.println("NOT VALID METHOD CALL");
+//            System.out.println("NOT VALID METHOD CALL");
             return false;
         }
 
@@ -195,7 +175,7 @@ public class NFA implements NFAInterface{
             NFAState transition = getState(state);
             Set<NFAState> transitionSet = currentState.addTransition(transition, onSymb);
             if (!transitionSet.contains(transition)) { // For testing if not adding properly
-                System.out.println("ERROR WITH ADDING TRANSITION");
+//                System.out.println("ERROR WITH ADDING TRANSITION");
                 return false;
             }
         }
@@ -223,11 +203,6 @@ public class NFA implements NFAInterface{
         return true; // Passes all criteria
     }
 
-    /*
-
-        @param
-        @return
-     */
     private boolean statesInMachine(Set<String> states) {
         for (String state: states) {
             State testState = getState(state);
@@ -236,5 +211,18 @@ public class NFA implements NFAInterface{
             }
         }
         return true;
+    }
+
+    private boolean inSigma(char symbol) {
+        if (EPSILON == symbol) { // Epsilon not a letter in the alphabet but is technically a valid transitional character
+            return true;
+        }
+
+        for (Character letter: this.Sigma) {
+            if (letter == (Character) symbol) {
+                return true;
+            }
+        }
+        return false;
     }
 }
