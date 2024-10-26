@@ -66,6 +66,9 @@ public class NFA implements NFAInterface{
 
     @Override
     public void addSigma(char symbol) {
+        if (EPSILON == symbol) { // Epsilon is not a character in the alphabet
+            return;
+        }
         Sigma.add(symbol);
     }
 
@@ -75,6 +78,10 @@ public class NFA implements NFAInterface{
         @return
      */
     private boolean inSigma(char symbol) {
+        if (EPSILON == symbol) { // Epsilon not a letter in the alphabet but is technically a valid transitional character
+            return true;
+        }
+
         for (Character letter: this.Sigma) {
             if (letter == (Character) symbol) {
                 return true;
@@ -174,7 +181,7 @@ public class NFA implements NFAInterface{
 
     @Override
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
-        NFAState currentState = (NFAState) getState(fromState);
+        NFAState currentState = getState(fromState);
         if (currentState == null || !inSigma(onSymb) || !statesInMachine(toStates)) { // fromState not valid in machine or onSymb not present in alphabet
             System.out.println("NOT VALID METHOD CALL");
             return false;
@@ -185,7 +192,7 @@ public class NFA implements NFAInterface{
         }
         // Adding transition
         for (String state: toStates) {
-            NFAState transition = (NFAState) getState(state);
+            NFAState transition = getState(state);
             Set<NFAState> transitionSet = currentState.addTransition(transition, onSymb);
             if (!transitionSet.contains(transition)) { // For testing if not adding properly
                 System.out.println("ERROR WITH ADDING TRANSITION");
@@ -203,6 +210,7 @@ public class NFA implements NFAInterface{
         if (epsilonTransition) {
             return false;
         }
+
 
 
         return true;
