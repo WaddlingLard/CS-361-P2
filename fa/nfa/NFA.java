@@ -205,15 +205,22 @@ public class NFA implements NFAInterface{
 
     @Override
     public boolean isDFA() {
-        // This is a DFA if there are no epsilon or ambiguous transitions
-        // Likely need to use eClosure() and a way to grab the transitions of each state
-        if (epsilonTransition) {
+        if (epsilonTransition) { // DFA do not have epsilon transitions
             return false;
         }
-
-
-
-        return true;
+        // Checking ALL transitions on ALL states
+        for (NFAState state: Q) { // Grabbing all states
+            for (Character letter: Sigma) { // Comparing with all elements in library
+                Set<NFAState> test = state.getNFATransition(letter);
+                if (test == null) {
+                    continue;
+                }
+                if (test.size() > 1) { // More than one option on a single character
+                    return false;
+                }
+            }
+        }
+        return true; // Passes all criteria
     }
 
     /*
