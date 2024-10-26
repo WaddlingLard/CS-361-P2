@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Stack;
+import java.util.LinkedList;
+import java.util.Queue;
+
 /*
     This class is used as an acting NFA which enables the user to create a Non-Deterministic Finite Automata.
 
@@ -78,12 +81,61 @@ public class NFA implements NFAInterface{
     @Override
     public boolean accepts(String s) {
 
+        // Validating string
+        char[] process = s.toCharArray();
+        for (char letter: process) {
+            if (!inSigma(letter)) {
+                return false; // Invalid string!
+            }
+        }
+
+        Queue<NFAState> nfaQueue = new LinkedList<NFAState>();
         NFAState currentState = this.q0;
-//        if (s.length() == 0) {
-//            return(isFinal(currentState.getName()));
-//        }
+        int size = 0;
 
+        // Initialize the queue
+        Set<NFAState> currentClosure = this.eClosure(currentState);
+        for (NFAState state: currentClosure) {
+            nfaQueue.add(state);
+        }
 
+        for (char letter: process) {
+            // First do eClosure transitions
+            for (int i = 0; i < size; i++) {
+                currentState = nfaQueue.remove();
+                currentClosure = eClosure(currentState);
+                for (NFAState state: currentClosure) {
+                    nfaQueue.add(state);
+                }
+            }
+
+            size = nfaQueue.size(); // Number of states to process
+
+            // Process letter from string (On current level)
+            for (int i = 0; i < size; i++) {
+                currentState = nfaQueue.remove(); // Grabbing a state to process
+                Set<NFAState> newStates = getToState(currentState, letter); // Grabbing all transitions from given letter
+                if (newStates == null) { // No valid transitions
+                    continue;
+                }
+
+                for (NFAState state: newStates) {
+                    nfaQueue.add(state); // Add all new states from the set
+                }
+            }
+            size = nfaQueue.size(); // How many elements to get eClosure
+        }
+
+        // Final eClosure call and see if anything is in final.
+        for (int i = 0; i < size; i++) {
+            currentState = nfaQueue.remove();
+            currentClosure = eClosure(currentState);
+            for (NFAState state: currentClosure) {
+                if (isFinal(state.getName())) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -124,7 +176,8 @@ public class NFA implements NFAInterface{
 
     @Override
     public Set<NFAState> getToState(NFAState from, char onSymb) {
-        return null;
+        Set<NFAState> states = from.getNFATransition(onSymb);
+        return states;
     }
 
     @Override
