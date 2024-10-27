@@ -209,8 +209,69 @@ public class NFA implements NFAInterface{
 
     @Override
     public int maxCopies(String s) {
-        return 0;
+        //validating the input string 
+
+    char [] process = s.toCharArray();
+    for (char letter : process){
+        if(!inSigma(letter)){
+            return 0; //invaild string and return 0
+        }
     }
+
+    Queue<NFAState> nfaQueue = new LinkedList<NFAState>();
+    NFAState currentState = this.q0;
+    int maxCopies = 0;
+
+    //initialize the queue with the epsilon closure of start state 
+    Set<NFAState> currentClosure = this.eClosure(currentState);
+    for (NFAState state : currentClosure){
+        nfaQueue.add(state);
+    }
+
+    for(char letter : process){
+        //perform epsilon closures on the current level
+        for(int i =0; i< nfaQueue.size(); i++){
+            currentState = nfaQueue.remove();
+            currentClosure = eClosure(currentState);
+            
+            for(NFAState state: currentClosure){
+                nfaQueue.add(state);
+            }
+        }
+        int size = nfaQueue.size(); //number of states process right now
+        Set<NFAState> newStatesSet = new HashSet<>(); //to track unique new states
+
+        //process the current letter 
+        for(int i =0; i < size; i++){
+            currentState = nfaQueue.remove(); //take a state to process 
+            Set<NFAState> newStates = getToState(currentState, letter); //transition with current letter
+            if(newStates != null){
+                newStatesSet.addAll(newStates); // add all new states
+            }
+        }
+
+     // Add unique new states to the queue
+     for (NFAState state : newStatesSet) {
+        nfaQueue.add(state);
+    }
+
+    // Update the maximum number of copies based on the size of the queue
+    maxCopies = Math.max(maxCopies, nfaQueue.size());
+}
+
+// Final eClosure call to check for final states
+for (NFAState state : nfaQueue) {
+    currentClosure = eClosure(state);
+    for (NFAState finalState : currentClosure) {
+        if (isFinal(finalState.getName())) {
+            return maxCopies; // Return the maximum copies if we reached a final state
+        }
+    }
+}
+
+return 0; // No final state reached
+}
+
 
     @Override
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
