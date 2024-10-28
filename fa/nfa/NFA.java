@@ -2,12 +2,7 @@ package fa.nfa;
 
 import fa.State;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.LinkedHashSet;
-import java.util.Stack;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 /*
     This class is used as an acting NFA which enables the user to create a Non-Deterministic Finite Automata.
@@ -25,7 +20,7 @@ public class NFA implements NFAInterface{
     private NFAState q0;
     private boolean epsilonTransition;
     private final char EPSILON = 'e';
-
+    private static int maxStates = 0;
 
     public NFA(){
         this.F = new LinkedHashSet<>();
@@ -75,16 +70,15 @@ public class NFA implements NFAInterface{
         Sigma.add(symbol);
     }
 
-    /*
-        Different Implementation from P1
-     */
     @Override
     public boolean accepts(String s) {
 
         // Validating string
         char[] process = s.toCharArray();
         for (char letter: process) {
-            if (!inSigma(letter)) {
+            if (!inSigma(letter) || EPSILON == letter) { // Just grab eClosure
+                Set<NFAState> temp = eClosure(this.q0);
+                maxStates = temp.size();
                 return false; // Invalid string!
             }
         }
@@ -92,6 +86,7 @@ public class NFA implements NFAInterface{
         Queue<NFAState> nfaQueue = new LinkedList<NFAState>();
         NFAState currentState = this.q0;
         int size = 0;
+        int maxCopies = 0;
 
         // Initialize the queue
         Set<NFAState> currentClosure = this.eClosure(currentState);
@@ -109,6 +104,12 @@ public class NFA implements NFAInterface{
                 }
             }
 
+            // Update maxStates after processing epsilon transitions
+            Set<NFAState> temp = new HashSet<>();
+            temp.addAll(nfaQueue);
+            maxCopies = Math.max(maxCopies, temp.size());
+            maxStates = maxCopies;
+
             size = nfaQueue.size(); // Number of states to process
 
             // Process letter from string (On current level)
@@ -123,17 +124,33 @@ public class NFA implements NFAInterface{
                     nfaQueue.add(state); // Add all new states from the set
                 }
             }
+
+            // Update maxStates after processing a character
+            Set<NFAState> temp2 = new HashSet<>();
+            temp2.addAll(nfaQueue);
+            maxCopies = Math.max(maxCopies, temp2.size());
+            maxStates = maxCopies;
+
             size = nfaQueue.size(); // How many elements to get eClosure
         }
 
-        // Final eClosure call and see if anything is in final.
+        Set<NFAState> finalstates = new HashSet<>();
+        // Final eClosure call (used to update maxcopies)
         for (int i = 0; i < size; i++) {
             currentState = nfaQueue.remove();
             currentClosure = eClosure(currentState);
             for (NFAState state: currentClosure) {
-                if (isFinal(state.getName())) {
-                    return true;
-                }
+                finalstates.add(state);
+            }
+        }
+
+        maxCopies = Math.max(maxCopies, finalstates.size());
+        maxStates = maxCopies;
+
+        // Is anything in final?
+        for (NFAState state: finalstates) {
+            if (isFinal(state.getName())) {
+                return true; // Is found!
             }
         }
         return false;
@@ -199,85 +216,21 @@ public class NFA implements NFAInterface{
                         }
                     }
                 }
-
-                
             }
         }
-
         return closure;
     }
 
     @Override
     public int maxCopies(String s) {
-        //validating the input string 
-
-    char [] process = s.toCharArray();
-    for (char letter : process){
-        if(!inSigma(letter)){
-            return 0; //invaild string and return 0
-        }
+        this.accepts(s);
+        return maxStates;
     }
-
-    Queue<NFAState> nfaQueue = new LinkedList<NFAState>();
-    NFAState currentState = this.q0;
-    int maxCopies = 0;
-
-    //initialize the queue with the epsilon closure of start state 
-    Set<NFAState> currentClosure = this.eClosure(currentState);
-    for (NFAState state : currentClosure){
-        nfaQueue.add(state);
-    }
-
-    for(char letter : process){
-        //perform epsilon closures on the current level
-        for(int i =0; i< nfaQueue.size(); i++){
-            currentState = nfaQueue.remove();
-            currentClosure = eClosure(currentState);
-            
-            for(NFAState state: currentClosure){
-                nfaQueue.add(state);
-            }
-        }
-        int size = nfaQueue.size(); //number of states process right now
-        Set<NFAState> newStatesSet = new HashSet<>(); //to track unique new states
-
-        //process the current letter 
-        for(int i =0; i < size; i++){
-            currentState = nfaQueue.remove(); //take a state to process 
-            Set<NFAState> newStates = getToState(currentState, letter); //transition with current letter
-            if(newStates != null){
-                newStatesSet.addAll(newStates); // add all new states
-            }
-        }
-
-     // Add unique new states to the queue
-     for (NFAState state : newStatesSet) {
-        nfaQueue.add(state);
-    }
-
-    // Update the maximum number of copies based on the size of the queue
-    maxCopies = Math.max(maxCopies, nfaQueue.size());
-}
-
-// Final eClosure call to check for final states
-for (NFAState state : nfaQueue) {
-    currentClosure = eClosure(state);
-    for (NFAState finalState : currentClosure) {
-        if (isFinal(finalState.getName())) {
-            return maxCopies; // Return the maximum copies if we reached a final state
-        }
-    }
-}
-
-return 0; // No final state reached
-}
-
 
     @Override
     public boolean addTransition(String fromState, Set<String> toStates, char onSymb) {
         NFAState currentState = getState(fromState);
         if (currentState == null || !inSigma(onSymb) || !statesInMachine(toStates)) { // fromState not valid in machine or onSymb not present in alphabet
-//            System.out.println("NOT VALID METHOD CALL");
             return false;
         }
 
@@ -289,7 +242,6 @@ return 0; // No final state reached
             NFAState transition = getState(state);
             Set<NFAState> transitionSet = currentState.addTransition(transition, onSymb);
             if (!transitionSet.contains(transition)) { // For testing if not adding properly
-//                System.out.println("ERROR WITH ADDING TRANSITION");
                 return false;
             }
         }

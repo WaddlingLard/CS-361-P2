@@ -15,11 +15,20 @@ public class NFAState extends State {
         this.states = new HashMap<>();
     }
 
-    /*
+        /*
+       This method adds a DFA transition to a DFAState provided a key and value
+       @param sigma
+       @param location
+       @return The origin DFAState that now has a transition attacted to it
+     */
 
-        @param
-        @param
-        @return
+
+    /*
+        Adds a transition to this state provided a given character
+
+        @param location
+        @param sigma
+        @return A set of NFAStates that contain the end transitions
      */
     public Set<NFAState> addTransition(NFAState location, Character sigma) {
         Set<NFAState> currentStates = this.getNFATransition(sigma);
@@ -35,23 +44,18 @@ public class NFAState extends State {
     }
 
     /*
+        Gets the NFATransition set from a provided character
 
-        @param
-        @return
+        @param sigma
+        @return A set of NFAStates
      */
     public Set<NFAState> getNFATransition(Character sigma) { return states.get(sigma); }
 
     /*
-        A toString() method primarily used for testing purposes
-        @return Output of name and map transitions
-     */
-    public String toString() {
-        String output = "";
-        output += getName() + "\n";
-        output += states.toString();
-        return output;
-    }
+        Gets the epsilon transitions of the current state
 
+        @return A set of NFAStates
+     */
     public Set<NFAState> getEpsilonTransitions() {
         if (states.containsKey('e')) { // Check if there are states reachable via ε transitions
             return states.get('e'); // Return the states with the ε transition
